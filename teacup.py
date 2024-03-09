@@ -10,8 +10,7 @@ with BuildPart() as ex:
     with Locations((0, -25, 0), (0, 25, 0)):
         Sphere(radius=10)
     Cylinder(10, 50, rotation=(0, 90, 0))
-    with Locations((0, 0, 25/4)):
-        Box(100, 100, 25/2, mode=Mode.INTERSECT)
+    split(bisect_by=Plane.XY)
 
 # with BuildPart() as ex:
 #     with BuildLine() as ex_ln:
@@ -23,8 +22,5 @@ with BuildPart() as ex:
 #         Sphere(radius=10)
 
 show(ex)
-
-
-
-# ex.part.export_step("teacup.step")
-# ex.part.export_step("teacup.stl")
+ex.part.export_step("teacup.step")
+ex.part.export_step("teacup.stl")
