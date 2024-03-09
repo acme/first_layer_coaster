@@ -8,36 +8,42 @@ const gcodeContent = fs.readFileSync(gcodeFile, 'utf-8');
 const gcodeLines = gcodeContent.split('\n');
 
 // Initialize variables for OpenSCAD conversion
-let openscadCode = `include <BOSL2/std.scad>\n$fn = $preview ? 64 : 128;\nunion() {\n`;
+let openscadCode = `
+include <BOSL2/std.scad>
+$fn = $preview ? 64 : 128;
+intersection(){
+union() {
+`;
 let currentX = 0;
 let currentY = 0;
 let currentZ = 0;
 let previousX = 0;
 let previousY = 0;
 let previousZ = 0;
-let width = 250;
+let width = 300;
 let scale = 16;
 let colour = 'white';
 
 // Parse GCode lines and generate OpenSCAD code
 gcodeLines.forEach((line) => {
-  // Remove any leading/trailing whitespace
   line = line.trim();
 
-  // Skip empty lines
-  if (line === '') {
-    return;
-  }
+  if (line === '') return;
 
-  // Copy comments
   if (line.charAt(0) == ';') {
     const comment = line.replace(/^; ?/, '');
-    if (comment == 'TYPE:Perimeter') {
-      colour = "gold";
-    } else if (comment == 'TYPE:External perimeter') {
-      colour = "yellow";
-    } else if (comment == 'TYPE:Solid infill' || comment == 'TYPE:Internal infill' || comment == 'TYPE:Top solid infill') {
-      colour = "red";
+    switch (comment) {
+      case 'TYPE:Perimeter':
+        colour = "gold";
+        break;
+      case 'TYPE:External perimeter':
+        colour = "yellow";
+        break;
+      case 'TYPE:Solid infill':
+      case 'TYPE:Internal infill':
+      case 'TYPE:Top solid infill':
+        colour = "red";
+        break;
     }
     if (comment == "LAYER_CHANGE" || comment.match(/^TYPE:/)) {
       // First layer only
@@ -82,10 +88,8 @@ gcodeLines.forEach((line) => {
       case 'E':
         e = value;
         break;
-      // Add more cases for other GCode commands as needed
     }
     if (e > 0 && currentZ <= 0.2) {
-      // if (e > 0) {
       const distance = Math.sqrt((currentX - previousX) ** 2 + (currentY - previousY) ** 2);
       if (distance) {
         openscadCode += `color("${colour}") stroke([[${previousX * scale}, ${previousY * scale}, ${previousZ * scale}], [${currentX * scale}, ${currentY * scale}, ${currentZ * scale}]], width=${width * e / distance});\n`;
@@ -97,7 +101,11 @@ gcodeLines.forEach((line) => {
   previousZ = currentZ;
 });
 
-openscadCode += "}\n";
+openscadCode += `
+}
+translate([0, 0, 0.02 * ${scale}]) cube(10000);
+}
+`;
 
 // Write the OpenSCAD code to a file
 const openscadFile = 'output.scad';
