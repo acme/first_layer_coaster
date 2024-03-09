@@ -8,7 +8,7 @@ const gcodeContent = fs.readFileSync(gcodeFile, 'utf-8');
 const gcodeLines = gcodeContent.split('\n');
 
 // Initialize variables for OpenSCAD conversion
-let openscadCode = `include <BOSL2/std.scad>\n$fn = $preview ? 64 : 128;\n`;
+let openscadCode = `include <BOSL2/std.scad>\n$fn = $preview ? 64 : 128;\nunion() {\n`;
 let currentX = 0;
 let currentY = 0;
 let currentZ = 0;
@@ -93,6 +93,8 @@ gcodeLines.forEach((line) => {
   previousY = currentY;
   previousZ = currentZ;
 });
+
+openscadCode += "}\n";
 
 // Write the OpenSCAD code to a file
 const openscadFile = 'output.scad';
