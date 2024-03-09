@@ -15,7 +15,7 @@ let currentZ = 0;
 let previousX = 0;
 let previousY = 0;
 let previousZ = 0;
-let width = 0.6;
+let width = 250;
 let scale = 16;
 let colour = 'white';
 
@@ -86,7 +86,10 @@ gcodeLines.forEach((line) => {
     }
     if (e > 0 && currentZ <= 0.2) {
       // if (e > 0) {
-      openscadCode += `color("${colour}") stroke([[${previousX * scale}, ${previousY * scale}, ${previousZ * scale}], [${currentX * scale}, ${currentY * scale}, ${currentZ * scale}]], width=${width * scale});\n`;
+      const distance = Math.sqrt((currentX - previousX) ** 2 + (currentY - previousY) ** 2);
+      if (distance) {
+        openscadCode += `color("${colour}") stroke([[${previousX * scale}, ${previousY * scale}, ${previousZ * scale}], [${currentX * scale}, ${currentY * scale}, ${currentZ * scale}]], width=${width * e / distance});\n`;
+      }
     }
   });
   previousX = currentX;
